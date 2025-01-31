@@ -3,6 +3,7 @@ using Microsoft.Win32.SafeHandles;
 using BCrypt.Net;
 using System.Numerics;
 using NewAutoCenter;
+using System.Globalization;
 
 namespace Auto_Center
 {
@@ -11,6 +12,8 @@ namespace Auto_Center
 
         static void Main(string[] args)
         {
+            string login = "";
+            
             string input = "";
             bool isOpen = true;
 
@@ -18,12 +21,15 @@ namespace Auto_Center
             {
                 using (var context = new AutoCenterContext())
                 {
-                    MainWIndow main = new MainWIndow(input, isOpen, context);
-                    DrawAuto draw = new DrawAuto(context);
+                    MainWindow main = new MainWindow(context, login);
+                    DrawAuto draw = new DrawAuto(context, login);
 
                     main.Menu(isOpen, input);
 
                     //main.Menu(isOpen, input);
+                    
+
+
                 }
             }
         }
@@ -31,18 +37,16 @@ namespace Auto_Center
     //Scaffold-DbContext "Host=localhost;Port=5432;Database=Auto_Center;Username=postgres;Password=7520" Npgsql.EntityFrameworkCore.PostgreSQL -OutputDir Entities -Force
     //Npgsql.EntityFrameworkCore.PostgreSQL
 
-    class MainWIndow
+    class MainWindow
     {
-        public string Input;
-        public bool IsOpen = true;
         private readonly AutoCenterContext _context;
-        private bool _isAuthenticated = false;
+        private string _login;
+        private string _password;
 
-        public MainWIndow(string input, bool isOpen, AutoCenterContext context)
+        public MainWindow(AutoCenterContext context, string login)
         {
-            Input = input;
-            IsOpen = isOpen;
             _context = context;
+            _login = login;
         }
 
         public void Register()
@@ -51,28 +55,28 @@ namespace Auto_Center
             Console.Write("Введите ваш ФИО: ");
             string fio = Console.ReadLine();
             Console.Write("Введите логин: ");
-            string login = Console.ReadLine();
+            _login = Console.ReadLine();
             Console.Write("Введите пароль: ");
-            string password = Console.ReadLine();
+            _password = Console.ReadLine();
 
 
-            if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(fio))
+            if (string.IsNullOrWhiteSpace(_login) || string.IsNullOrWhiteSpace(_password) || string.IsNullOrWhiteSpace(fio))
             {
                 Console.WriteLine("Логин и пароль не могут быть пустыми.");
                 return;
             }
 
-            if (_context.Users.Any(u => u.Login == login))
+            if (_context.Users.Any(u => u.Login == _login))
             {
                 Console.WriteLine("Пользователь с таким логином уже существует.");
                 return;
             }
 
-            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(_password);
 
             var data = new User
             {
-                Login = login,
+                Login = _login,
                 Password = hashedPassword,
                 Fio = fio
             };
@@ -80,34 +84,36 @@ namespace Auto_Center
             _context.Users.Add(data);
             _context.SaveChanges();
             Console.WriteLine("Добро пожаловать в автоцентр");
-            _isAuthenticated = true;
+            InAccount();
         }
 
         public void Autotization()
         {
+            AutoCenterContext context = new AutoCenterContext();
+
             Console.WriteLine("Добро пожаловать на авторизацию!");
             Console.Write("Введите ваш логин: ");
-            string login = Console.ReadLine();
+            _login = Console.ReadLine();
             Console.Write("Введите ваш пароль: ");
-            string password = Console.ReadLine();
+            _password = Console.ReadLine();
 
-            if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(password))
+            if (string.IsNullOrWhiteSpace(_login) || string.IsNullOrWhiteSpace(_password))
             {
                 Console.WriteLine("Логин и пароль не могут быть пустыми.");
                 return;
             }
 
-            var user = _context.Users.SingleOrDefault(u => u.Login == login);
+            var user = _context.Users.SingleOrDefault(u => u.Login == _login);
             if (user == null)
             {
                 Console.WriteLine("Пользователь не найден.");
                 return;
             }
 
-            if (BCrypt.Net.BCrypt.Verify(password, user.Password))
+            if (BCrypt.Net.BCrypt.Verify(_password, user.Password))
             {
                 Console.WriteLine("Авторизация прошла успешно.");
-                _isAuthenticated = true;
+                InAccount();
                 return;
             }
 
@@ -130,6 +136,8 @@ namespace Auto_Center
 
                 bool isOpenMenu = true;
 
+                Cash_Users cash = new Cash_Users(_context, _login);
+
                 while (isOpenMenu)
                 {
                     switch (input)
@@ -137,25 +145,24 @@ namespace Auto_Center
                         case "1":
                             Console.WriteLine("Вы зарегистрированы?");
                             Console.Write("Поля для ввода: ");
+
+                            
                             string answer = Console.ReadLine();
 
                             if (answer == "yes" || answer == "y" || answer == "да" || answer == "Y" || answer == "Yes" || answer == "Да")
                             {
-                                Autotization();
-
-                                if (_isAuthenticated = true)
-                                {
-                                    Console.WriteLine();
-                                    InAccount();
+                                while (true) 
+                                { 
+                                    Autotization(); 
+                                    
+                                    Console.Clear(); 
+                                    Console.ReadKey(); 
                                 }
                             }
 
                             else if (answer == "no" || answer == "No" || answer == "n" || answer == "N" || answer == "нет" || answer == "Нет")
                             {
-                                Register();
-                                Console.ReadKey();
-
-                                InAccount();
+                                while (true) { Register(); Console.Clear(); Console.ReadKey(); }
                             }
                             break;
 
@@ -179,12 +186,21 @@ namespace Auto_Center
             }
         }
 
+        public void AddBalance()
+        {
+            using (var context = new AutoCenterContext())
+            {
+                Cash_Users cash = new Cash_Users(context, _login);
+                cash.AddCash();
+            }
+        }
+        
         public void InAccount()
         {
             Console.WriteLine("Наш список авто: ");
             using (var context = new AutoCenterContext())
             {
-                DrawAuto auto = new DrawAuto(context);
+                DrawAuto auto = new DrawAuto(context, _login);
 
                 auto.DrawAllCars();
             }
