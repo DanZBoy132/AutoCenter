@@ -154,6 +154,58 @@ namespace NewAutoCenter
                 Console.WriteLine("Пользователь не найден.");
             }
         }
+
+        public void SellCarsAndUseUsers(int amount, string model)
+        {
+            var sellCar = _context.CarInMagazines.SingleOrDefault (u => u.Model== model);
+            
+            if ( _context.Users.Any( u => u.Login == _login))
+            {
+                var user = _context.Users.Single( u => u.Login == _login);
+
+                if (user.Cash < amount)
+                {
+                    Console.WriteLine("Недостаточно средств, попробуйте после пополнения!");
+                }
+
+                else
+                {
+                    user.Cash -= amount;
+                    _context.SaveChanges();
+                    Console.WriteLine($"Покупка прошла успешно! У вас теперь есть {sellCar.Model}, ваш отстаток {user.Cash}");
+                }
+            }
+        }
+
+        public void QuentityCar(string model)
+        {
+            using (var context = new AutoCenterContext())
+            {
+                var car = context.CarInMagazines.FirstOrDefault(c => c.Model == model);
+
+                if (car != null)
+                {
+                    int currentQuantity = int.Parse(car.quentity);
+
+                    if (currentQuantity > 0)
+                    {
+                        currentQuantity--;
+                        car.quentity = currentQuantity.ToString(); // Обновляем количество
+                        context.SaveChanges(); // Сохраняем изменения в базу данных
+
+                        Console.WriteLine($"Осталось машин модели {car.Model} в количестве {currentQuantity} штук.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Машины модели {car.Model} больше нет в наличии.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Модель {model} не найдена в базе данных.");
+                }
+            }
+        }
     }
 
 

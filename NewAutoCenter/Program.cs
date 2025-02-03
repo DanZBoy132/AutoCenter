@@ -9,9 +9,18 @@ namespace Auto_Center
 {
     internal class Program
     {
-
+        static void ColorConsole()
+        {
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.BackgroundColor = ConsoleColor.White;
+            Console.Clear();
+        }
         static void Main(string[] args)
         {
+            ColorConsole();
+
+            Console.Title = "Автоцентр Solaris";
+
             string login = "";
             
             string input = "";
@@ -27,8 +36,6 @@ namespace Auto_Center
                     main.Menu(isOpen, input);
 
                     //main.Menu(isOpen, input);
-                    
-
 
                 }
             }
@@ -100,6 +107,8 @@ namespace Auto_Center
             if (string.IsNullOrWhiteSpace(_login) || string.IsNullOrWhiteSpace(_password))
             {
                 Console.WriteLine("Логин и пароль не могут быть пустыми.");
+                Console.ReadKey();
+                Console.Clear();
                 return;
             }
 
@@ -107,6 +116,8 @@ namespace Auto_Center
             if (user == null)
             {
                 Console.WriteLine("Пользователь не найден.");
+                Console.ReadKey();
+                Console.Clear();
                 return;
             }
 
@@ -114,14 +125,23 @@ namespace Auto_Center
             {
                 Console.WriteLine("Авторизация прошла успешно.");
                 InAccount();
+
+                Console.ReadKey();
+                Console.Clear();
                 return;
+
             }
 
             else
             {
                 Console.WriteLine("Неверный логин или пароль!");
+
+                Console.ReadKey();
+                Console.Clear();
                 return;
             }
+
+            
         }
 
         public void Menu(bool isOpen, string input)
@@ -155,8 +175,8 @@ namespace Auto_Center
                                 { 
                                     Autotization(); 
                                     
-                                    Console.Clear(); 
-                                    Console.ReadKey(); 
+                                    Console.ReadKey();
+                                    Console.Clear();
                                 }
                             }
 
@@ -170,6 +190,47 @@ namespace Auto_Center
                             Console.WriteLine("Начнем");
 
                             Console.WriteLine("Для продолжения нажмите любую кнопку");
+
+                            DrawAuto draw = new DrawAuto(_context, _login);
+
+                            draw.DrawAllCarsForView();
+
+                            Console.ReadKey();
+
+                            Console.WriteLine("Пока это все машины в нашем автоцентре");
+                            Console.WriteLine("Желаете преобрести?");
+                            Console.WriteLine("Поля для ввода: ");
+
+                            string answerAuto = Console.ReadLine();
+
+                            if (answerAuto == "yes" || answerAuto == "y" || answerAuto == "да" || answerAuto == "Y" || answerAuto == "Yes" || answerAuto == "Да")
+                            {
+                                Console.WriteLine("Вы зарегистрированы?");
+                                Console.Write("Поля для ввода: ");
+
+                                if (answerAuto == "yes" || answerAuto == "y" || answerAuto == "да" || answerAuto == "Y" || answerAuto == "Yes" || answerAuto == "Да")
+                                {
+                                    while (true)
+                                    {
+                                        Autotization();
+
+                                        Console.ReadKey();
+                                        Console.Clear();
+                                    }
+                                }
+
+                                else if (answerAuto == "no" || answerAuto == "No" || answerAuto == "n" || answerAuto == "N" || answerAuto == "нет" || answerAuto == "Нет")
+                                {
+                                    while (true) { Register(); Console.Clear(); Console.ReadKey(); }
+                                }
+                            }
+
+                            else if (answerAuto == "no" || answerAuto == "No" || answerAuto == "n" || answerAuto == "N" || answerAuto == "нет" || answerAuto == "Нет")
+                            {
+                                Console.WriteLine("Прощайте!!!");
+                                isOpen = false;
+                            }
+
                             Console.ReadKey();
                             break;
 
@@ -200,9 +261,9 @@ namespace Auto_Center
             Console.WriteLine("Наш список авто: ");
             using (var context = new AutoCenterContext())
             {
-                DrawAuto auto = new DrawAuto(context, _login);
-
-                auto.DrawAllCars();
+                DrawAuto draw = new DrawAuto(context, _login);
+                
+                draw.DrawAllCars();
             }
         }
 

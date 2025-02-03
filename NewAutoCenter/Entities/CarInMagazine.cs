@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Auto_Center;
+namespace NewAutoCenter.Entities;
 
 public partial class CarInMagazine
 {
@@ -13,7 +13,7 @@ public partial class CarInMagazine
 
     public int YearsBorn { get; set; }
 
-    public string price { get; set; } = null!;
+    public string Price { get; set; } = null!;
 
-    public string quentity { get; set; } = null!;
+    public string Quentity { get; set; } = null!;
 }
